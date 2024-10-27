@@ -1,11 +1,10 @@
-import './App.css';
+import { Container } from "@mui/material";
+import Game from "./Game";
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      Hello
-    </div>
+    <Container>
+      <Game />
+    </Container>
   );
 }
-
-export default App;
