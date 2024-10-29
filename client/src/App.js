@@ -22,10 +22,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // const username = prompt("Username");
-    // setUsername(username);
-    // socket.emit("username", username);
-
     socket.on("opponentJoined", (roomData) => {
       console.log("roomData", roomData)
       setPlayers(roomData.players);
