@@ -29,9 +29,12 @@ io.on('connection', (socket) => {
   console.log(socket.id, 'connected');
 
   // listen to username event
-  socket.on('username', (username) => {
-    console.log(username);  
+  socket.on('username', (username) => {  
     socket.data.username = username;
+  });
+  // listen to setOrientation event
+  socket.on('setOrientation', (orientation) => {
+    socket.data.orientation = orientation;
   });
 
   // createRoom
@@ -42,7 +45,7 @@ io.on('connection', (socket) => {
     // set roomId as a key and roomData including players as value in the map
     rooms.set(roomId, { // <- 3
       roomId,
-      players: [{ id: socket.id, username: socket.data?.username }]
+      players: [{ id: socket.id, username: socket.data?.username, orientation: socket.data?.orientation }],
     });
     // returns Map(1){'2b5b51a9-707b-42d6-9da8-dc19f863c0d0' => [{id: 'socketid', username: 'username1'}]}
 
@@ -67,18 +70,15 @@ io.on('connection', (socket) => {
     }
 
     if (error) {
-      // if there's an error, check if the client passed a callback,
-      // call the callback (if it exists) with an error object and exit or 
-      // just exit if the callback is not given
 
-      if (callback) { // if user passed a callback, call it with an error payload
+      if (callback) {
         callback({
           error,
           message
         });
       }
 
-      return; // exit
+      return;
     }
 
     await socket.join(args.roomId); // make the joining client join the room
@@ -103,6 +103,10 @@ io.on('connection', (socket) => {
   socket.on('move', (data) => {
     // emit to all sockets in the room except the emitting socket.
     socket.to(data.room).emit('move', data.move);
+  });
+
+  socket.on('message', (data) => {
+    socket.to(data.room).emit('message', data);
   });
 
   socket.on("disconnect", () => {

@@ -4,8 +4,7 @@
   "description": "Square Connect is a web-based chess platform that brings players closer by combining real-time chess gameplay with integrated video chat. Perfect for casual matches and competitive play, Square Connect offers an immersive experience by enabling face-to-face interaction alongside each game.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start" : "concurrently \"cd client && npm run start\" \"cd server && npm run start\""
+    "start" : "concurrently \"cd client && npm run dev\" \"cd server && npm run start\""
   },
   "repository": {
     "type": "git",
