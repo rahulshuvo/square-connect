@@ -13,7 +13,7 @@ export default function ChessGameChat({ room }) {
   const chatRef = useRef(null)
 
   useEffect(() => {
-    const chatContainer = chatRef.current
+    const chatContainer = chatRef.current?.querySelector('[data-radix-scroll-area-viewport]')
     if (chatContainer) {
       chatContainer.scrollTop = chatContainer.scrollHeight
     }
@@ -31,10 +31,15 @@ export default function ChessGameChat({ room }) {
   }
 
   useEffect(() => {
-    socket.on('message', (data) => {
-      setMessages([...messages, { text: data.text, sender: 'Opponent' }])
-    })
-  }, [messages])
+    const handleMessage = (data) => {
+      setMessages(prevMessages => [...prevMessages, { text: data.text, sender: 'Opponent' }])
+    }
+    
+    socket.on('message', handleMessage)
+    
+    // Cleanup function to remove the listener
+    return () => socket.off('message', handleMessage)
+  }, []) // Empty dependency array
 
   return (
     <Card>
