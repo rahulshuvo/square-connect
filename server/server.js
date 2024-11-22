@@ -6,12 +6,17 @@ const path = require('path');
 
 const app = express(); // initialize express
 
+
+
 const server = http.createServer(app);
 
 
 // set port to value received from environment variable or 8080 if null
 const port = process.env.PORT || 5000;
-const staticPath = path.resolve(__dirname, ".", "dist");
+
+//setup middleware to serve static files
+const staticPath = path.resolve(__dirname, "dist");
+app.use(express.static(staticPath));
 
 // upgrade http server to websocket server
 const io = new Server(server, {
@@ -155,7 +160,7 @@ if (process.env.NODE_ENV == "production") {
   
   app.get("*", (req, res) => {
     app.use(express.static(staticPath));
-    const indexFile = path.join(__dirname, ".", "dist", "index.html");
+    const indexFile = path.join(__dirname, "dist", "index.html");
     return res.sendFile(indexFile);
   });
 }
