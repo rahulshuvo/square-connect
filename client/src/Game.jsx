@@ -38,7 +38,6 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
       try {
         const result = chess.move(move) // update Chess instance
         setFen(chess.fen()) // update fen state to trigger a re-render
-
         if (chess.isGameOver()) {
           if (chess.isCheckmate()) {
             setOver(

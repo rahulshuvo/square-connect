@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "client": "npm run dev --prefix client",
-    "server": "npm run start --prefix server",
+    "server": "nodemon --env-file=.env server/server.js",
     "start": "concurrently \"npm run client\" \"npm run server\""
   },
   "repository": {
@@ -14,11 +14,18 @@
   },
   "author": "Rahul",
   "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "socket.io": "^4.8.1",
+    "uuid": "^10.0.0"
+  },
   "bugs": {
     "url": "https://github.com/rahulshuvo/square-connect/issues"
   },
   "homepage": "https://github.com/rahulshuvo/square-connect#readme",
-  "devDependencies": {
-    "concurrently": "^8.2.1"
+"devDependencies": {
+    "concurrently": "^8.2.1",
+    "nodemon": "^3.1.7"
   }
 }
+

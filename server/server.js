@@ -2,6 +2,7 @@ const express = require('express');
 const { Server } = require("socket.io");
 const { v4: uuidV4 } = require('uuid');
 const http = require('http');
+const path = require("path");
 
 const app = express(); // initialize express
 
@@ -146,3 +147,14 @@ io.on('connection', (socket) => {
     rooms.delete(data.roomId); // <- 4 delete room from rooms map
   });
 });
+
+// production code
+if (process.env.NODE_ENV == "production") {
+  const publicPath = path.resolve(__dirname, ".", "build");
+  const filePath = path.join(__dirname, ".", "build", "index.html");
+  app.use(express.static(publicPath));
+
+  app.get("*", (req, res) => {
+    return res.sendFile(filePath);
+  });
+}
