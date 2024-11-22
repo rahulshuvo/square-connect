@@ -1,26 +1,21 @@
-import PropTypes from 'prop-types'
+/* eslint-disable react/prop-types */
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChevronRight} from 'lucide-react'
 
-function GameInfo({currentPlayer, isGameActive, startGame }) {
+function GameInfo({ opponent, gameDuration, isGameActive, startGame }) {
   return (
     <Card>
       <CardContent className="p-4">
         <h2 className="text-xl font-semibold mb-4">Game Info</h2>
         <div className="space-y-2">
           <p>
-            <strong>Opponent:</strong> GrandMaster123
+            <strong>Opponent:</strong> {opponent.length > 15 
+              ? `${opponent.slice(0, 15)}...` 
+              : opponent}
           </p>
           <p>
-            <strong>Your Color:</strong> White
-          </p>
-          <p>
-            <strong>Time Control:</strong> 10 min | 5 sec increment
-          </p>
-          <p>
-            <strong>Current Turn:</strong>{' '}
-            {currentPlayer === 'w' ? 'White' : 'Black'}
+            <strong>Time Control:</strong> {gameDuration} min 
           </p>
           <p>
             <strong>Game Status:</strong>{' '}
@@ -42,12 +37,6 @@ function GameInfo({currentPlayer, isGameActive, startGame }) {
       </CardContent>
     </Card>
   )
-}
-
-GameInfo.propTypes = {
-  currentPlayer: PropTypes.oneOf(['w', 'b']).isRequired,
-  isGameActive: PropTypes.bool.isRequired,
-  startGame: PropTypes.func.isRequired
 }
 
 export default GameInfo

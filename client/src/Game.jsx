@@ -13,24 +13,25 @@ import Chat from './components/Chat'
 import GameInfo from './components/GameInfo'
 import CustomDialog from './components/CustomDialog'
 
-export default function ChessGame({ players, room, orientation, cleanup }) {
+export default function ChessGame({ players, room, orientation, gameDuration, cleanup }) {
+  const opponentObject = players.find(player => player.orientation !== orientation) || null;
+  const opponent = opponentObject ? opponentObject.username : "name not found";
   const chess = useMemo(() => new Chess(), [])
   const [fen, setFen] = useState(chess.fen())
   const [over, setOver] = useState('')
 
-  const [game, setGame] = useState(new Chess())
+  // const [game, setGame] = useState(new Chess())
   const [whiteTime, setWhiteTime] = useState(600) // 10 minutes in seconds
   const [blackTime, setBlackTime] = useState(600) // 10 minutes in seconds
   const [isGameActive, setIsGameActive] = useState(false)
   const [currentPlayer, setCurrentPlayer] = useState('w')
-  const [messages, setMessages] = useState([])
   const [showVideoChat, setShowVideoChat] = useState(true)
   const [showTextChat, setShowTextChat] = useState(true)
   const [isSoundEnabled, setIsSoundEnabled] = useState(true)
   const [copied, setCopied] = useState(false)
-  const timerRef = useRef(null)
-  const chatRef = useRef(null)
-  const audioRef = useRef(new Audio('/move-sound.mp3'))
+  // const timerRef = useRef(null)
+  // const chatRef = useRef(null)
+  // const audioRef = useRef(new Audio('/move-sound.mp3'))
 
   const makeAMove = useCallback(
     (move) => {
@@ -108,14 +109,14 @@ export default function ChessGame({ players, room, orientation, cleanup }) {
   }, [room, cleanup])
 
   const startGame = () => {
-    setIsGameActive(true)
-    setGame(new Chess())
-    setWhiteTime(600)
-    setBlackTime(600)
-    setCurrentPlayer('w')
-    setMessages([])
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = setInterval(decrementTime, 1000)
+    // setIsGameActive(true)
+    // setGame(new Chess())
+    // setWhiteTime(600)
+    // setBlackTime(600)
+    // setCurrentPlayer('w')
+    // setMessages([])
+    // if (timerRef.current) clearInterval(timerRef.current)
+    // timerRef.current = setInterval(decrementTime, 1000)
   }
 
   const formatTime = (time) => {
@@ -126,77 +127,36 @@ export default function ChessGame({ players, room, orientation, cleanup }) {
       .padStart(2, '0')}`
   }
 
-  const decrementTime = useCallback(() => {
-    if (isGameActive) {
-      if (currentPlayer === 'w') {
-        setWhiteTime((prevTime) => {
-          if (prevTime <= 0) {
-            setIsGameActive(false)
-            clearInterval(timerRef.current)
-            return 0
-          }
-          return prevTime - 1
-        })
-      } else {
-        setBlackTime((prevTime) => {
-          if (prevTime <= 0) {
-            setIsGameActive(false)
-            clearInterval(timerRef.current)
-            return 0
-          }
-          return prevTime - 1
-        })
-      }
-    }
-  }, [currentPlayer, isGameActive])
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
-
-  useEffect(() => {
-    const chatContainer = chatRef.current
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight
-    }
-  }, [messages])
-
-  // function makeAMove(move) {
-  //   const gameCopy = new Chess(game.fen())
-
-  //   try {
-  //     const result = gameCopy.move(move)
-  //     setGame(gameCopy)
-  //     setCurrentPlayer(gameCopy.turn())
-  //     if (isSoundEnabled) {
-  //       audioRef.current.play()
+  // const decrementTime = useCallback(() => {
+  //   if (isGameActive) {
+  //     if (currentPlayer === 'w') {
+  //       setWhiteTime((prevTime) => {
+  //         if (prevTime <= 0) {
+  //           setIsGameActive(false)
+  //           clearInterval(timerRef.current)
+  //           return 0
+  //         }
+  //         return prevTime - 1
+  //       })
+  //     } else {
+  //       setBlackTime((prevTime) => {
+  //         if (prevTime <= 0) {
+  //           setIsGameActive(false)
+  //           clearInterval(timerRef.current)
+  //           return 0
+  //         }
+  //         return prevTime - 1
+  //       })
   //     }
-  //     return result
-  //   } catch (error) {
-  //     console.error('Invalid move:', error)
-  //     return null
   //   }
-  // }
+  // }, [currentPlayer, isGameActive])
 
-  // function onDrop(sourceSquare, targetSquare) {
-  //   const move = makeAMove({
-  //     from: sourceSquare,
-  //     to: targetSquare,
-  //     promotion: 'q', // always promote to a queen for example simplicity
-  //   })
-
-  //   if (move === null) return false
-
-  //   if (currentPlayer === 'w') {
-  //     setWhiteTime((prevTime) => Math.min(prevTime + 5, 600))
-  //   } else {
-  //     setBlackTime((prevTime) => Math.min(prevTime + 5, 600))
+  // useEffect(() => {
+  //   return () => {
+  //     if (timerRef.current) clearInterval(timerRef.current)
   //   }
+  // }, [])
 
-  //   return true
-  // }
 
   const copyRoomLink = () => {
     //const link = `${window.location.origin}?roomId=${room}`
@@ -223,11 +183,7 @@ export default function ChessGame({ players, room, orientation, cleanup }) {
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-2">
                 <div
-                  className={`p-2 rounded ${
-                    currentPlayer === 'b'
-                      ? 'bg-primary text-primary-foreground'
-                      : ''
-                  }`}
+                  className="p-2 rounded bg-primary text-primary-foreground"
                 >
                   <p className="font-semibold">
                     {orientation == 'black' ? 'White' : 'Black'}
@@ -257,11 +213,7 @@ export default function ChessGame({ players, room, orientation, cleanup }) {
               </div>
               <div className="flex justify-between items-center mt-2">
                 <div
-                  className={`p-2 rounded ${
-                    currentPlayer === 'w'
-                      ? 'bg-primary text-primary-foreground'
-                      : ''
-                  }`}
+                  className="p-2 rounded bg-primary text-primary-foreground"
                 >
                   <p className="font-semibold">
                     {orientation == 'black' ? 'Black' : 'White'}
@@ -302,7 +254,8 @@ export default function ChessGame({ players, room, orientation, cleanup }) {
             </CardContent>
           </Card>
           <GameInfo
-            currentPlayer={currentPlayer}
+            opponent={opponent}
+            gameDuration={gameDuration}
             isGameActive={isGameActive}
             startGame={startGame}
           />

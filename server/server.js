@@ -9,7 +9,7 @@ const server = http.createServer(app);
 
 
 // set port to value received from environment variable or 8080 if null
-const port = process.env.PORT || 8080 
+const port = 5000 
 
 // upgrade http server to websocket server
 const io = new Server(server, {
@@ -37,17 +37,23 @@ io.on('connection', (socket) => {
     socket.data.orientation = orientation;
   });
 
+  // listen to setGameDuration event
+  socket.on('setGameDuration', (gameDuration) => {
+    socket.data.gameDuration = gameDuration;
+  });
+
   // createRoom
   socket.on('createRoom', async (callback) => { // callback here refers to the callback function from the client passed as data
     const roomId = uuidV4(); // <- 1 create a new uuid
     await socket.join(roomId); // <- 2 make creating user join the room
-   
+    console.log("socket data", socket.data)
     // set roomId as a key and roomData including players as value in the map
     rooms.set(roomId, { // <- 3
       roomId,
+      gameDuration: socket.data?.gameDuration,
       players: [{ id: socket.id, username: socket.data?.username, orientation: socket.data?.orientation }],
     });
-    // returns Map(1){'2b5b51a9-707b-42d6-9da8-dc19f863c0d0' => [{id: 'socketid', username: 'username1'}]}
+  
 
     callback(roomId); // <- 4 respond with roomId to client by calling the callback function from the client
   });

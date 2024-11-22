@@ -9,12 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import socket from './socket'
 
-export default function InitGame({ setRoom, setOrientation, setPlayers }) {
+export default function InitGame({ setRoom, setOrientation, setGameDuration, setPlayers }) {
   // const router = useRouter()
   const [username, setUsername] = useState("")
   const [gameMode, setGameMode] = useState("start")
   const [pieceColor, setPieceColor] = useState("random")
-  const [gameDuration, setGameDuration] = useState("10")
+  const [gameTime, setGameTime] = useState("10")
   const [roomId, setRoomId] = useState("")
   const [roomError, setRoomError] = useState('')
   const [roomDialogOpen, setRoomDialogOpen] = useState(false)
@@ -26,19 +26,21 @@ export default function InitGame({ setRoom, setOrientation, setPlayers }) {
     e.preventDefault()
     // Here you would typically send this data to your backend or state management
     // For now, we'll just log it and redirect to a placeholder game page
-    console.log({ username, gameMode, pieceColor, gameDuration, roomId })
+    console.log({ username, gameMode, pieceColor, gameTime, roomId })
 
     const finalColor = pieceColor === 'random' ? getRandomColor() : pieceColor;
 
 
     socket.emit("username", username);
     socket.emit("setOrientation", finalColor );
+    socket.emit("setGameDuration", gameTime);
     if (gameMode === "start") {
       // router.push(`/game?username=${username}&mode=${gameMode}&color=${pieceColor}&duration=${gameDuration}`)
       socket.emit('createRoom', (r) => {
-        console.log(r)
+        console.log("from server" ,r)
         setRoom(r)
         setOrientation(finalColor)
+        setGameDuration(gameTime)
       })
     } else {
       // router.push(`/game?username=${username}&mode=${gameMode}&roomId=${roomId}`)
@@ -50,6 +52,7 @@ export default function InitGame({ setRoom, setOrientation, setPlayers }) {
         setPlayers(r?.players); // set players array to the array of players in the room
         setOrientation(r?.players[0].orientation === "black" ? "white" : "black"); // set orientation as black
         setRoomDialogOpen(false); // close dialog
+        setGameDuration(r?.gameDuration); // set game duration
       });
       
     }
@@ -111,7 +114,7 @@ export default function InitGame({ setRoom, setOrientation, setPlayers }) {
 
                 <div className="space-y-2">
                   <Label htmlFor="duration">Game Duration</Label>
-                  <Select value={gameDuration} onValueChange={setGameDuration}>
+                  <Select value={gameTime} onValueChange={setGameTime}>
                     <SelectTrigger id="duration">
                       <SelectValue placeholder="Select game duration" />
                     </SelectTrigger>
