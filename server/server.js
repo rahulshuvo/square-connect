@@ -11,7 +11,7 @@ const app = express(); // initialize express
 const server = http.createServer(app);
 
 
-// set port to value received from environment variable or 8080 if null
+// set port to value received from environment variable or 5000 if null
 const port = process.env.PORT || 5000;
 
 //setup middleware to serve static files

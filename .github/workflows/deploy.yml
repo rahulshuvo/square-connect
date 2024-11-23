@@ -1,0 +1,43 @@
+name: Build Frontend and Update Backend
+
+on:
+  push:
+    branches:
+      - master 
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20 
+
+    # Step 3: Install and Build Frontend
+    - name: Install and Build Frontend
+      working-directory: client
+      run: |
+        npm ci 
+        npm run build 
+
+    # Step 4: Copy Frontend Build to Backend
+    - name: Move Build to Backend
+      run: |
+        rm -rf server/dist 
+        cp -r client/dist server/ 
+
+    # Step 5: Commit and Push Changes
+    - name: Commit and Push
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@rahul.noreply.github.com"
+        git add server/dist
+        git commit -m "Auto-update frontend build"
+        git push
