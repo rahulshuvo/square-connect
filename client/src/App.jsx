@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import ChessGame from "./Game";
 import InitGame from "./InitGame";
 import socket from "./socket";
+import CustomAlert from "./components/CustomAlert";
 
 export default function App() {
 
@@ -9,6 +10,8 @@ export default function App() {
   const [orientation, setOrientation] = useState("");
   const [gameDuration, setGameDuration] = useState("")
   const [players, setPlayers] = useState([]);
+  const [showAlert, setShowAlert] = useState(false);
+  const [opponent, setOpponent] = useState("");
 
   // resets the states responsible for initializing a game
   const cleanup = useCallback(() => {
@@ -21,11 +24,22 @@ export default function App() {
   useEffect(() => {
     socket.on("opponentJoined", (roomData) => {
       setPlayers(roomData.players);
+      const opponentObject = roomData.players[1] || null;
+      const opponent = opponentObject ? opponentObject.username : "opponent";
+      setOpponent(opponent);
+      setShowAlert(true);
     });
   }, []);
 
   return (
     <>
+      {showAlert && (
+        <CustomAlert 
+          title="Opponent Joined"
+          description={`${opponent} has joined the game. Get ready to play!`}
+
+        />
+      )}
       {room ? (
         <ChessGame 
           room={room}
