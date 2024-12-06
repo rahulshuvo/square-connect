@@ -34,14 +34,20 @@ export default function App() {
   return (
     <>
       {showAlert && (
-        <CustomAlert 
+        <CustomAlert
           title="Opponent Joined"
           description={`${opponent} has joined the game. Get ready to play!`}
-
+          style={{
+            position: 'fixed',
+            zIndex: 1000,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
         />
       )}
       {room ? (
-        <ChessGame 
+        <ChessGame
           room={room}
           orientation={orientation}
           players={players}
@@ -50,12 +56,12 @@ export default function App() {
         />
       ) : (
         <InitGame
-        setRoom={setRoom}
-        setOrientation={setOrientation}
-        setPlayers={setPlayers}
-        setGameDuration={setGameDuration}
+          setRoom={setRoom}
+          setOrientation={setOrientation}
+          setPlayers={setPlayers}
+          setGameDuration={setGameDuration}
         />
       )}
-      </>
-  );
+    </>
+  )
 }

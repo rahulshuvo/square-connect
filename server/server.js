@@ -152,6 +152,21 @@ io.on('connection', (socket) => {
 
     rooms.delete(data.roomId); // <- 4 delete room from rooms map
   });
+
+
+  socket.on('offer', (data) => {
+    socket.to(data.room).emit('offer', data);
+});
+
+socket.on('answer', (data) => {
+    console.log('Answer received:', data);
+    socket.to(data.room).emit('answer', data);
+});
+
+socket.on('ice-candidate', (data) => {
+    console.log('ICE candidate received:', data);
+    socket.to(data.room).emit('ice-candidate', data);
+});
 });
 
 // production code

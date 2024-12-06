@@ -9,6 +9,7 @@ import { Copy, CopyCheck } from 'lucide-react'
 import socket from './socket'
 
 import VideoChat from './components/VideoChat'
+//import VideoChat from './components/VideoTest'
 import Chat from './components/Chat'
 import GameInfo from './components/GameInfo'
 import CustomDialog from './components/CustomDialog'
@@ -21,8 +22,8 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
   const [over, setOver] = useState('')
 
   // const [game, setGame] = useState(new Chess())
-  const [whiteTime, setWhiteTime] = useState(600) // 10 minutes in seconds
-  const [blackTime, setBlackTime] = useState(600) // 10 minutes in seconds
+  const [whiteTime, setWhiteTime] = useState(gameDuration * 60)
+  const [blackTime, setBlackTime] = useState(gameDuration * 60)
   const [isGameActive, setIsGameActive] = useState(false)
   const [currentPlayer, setCurrentPlayer] = useState('w')
   const [showVideoChat, setShowVideoChat] = useState(true)
@@ -31,13 +32,20 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
   const [copied, setCopied] = useState(false)
   // const timerRef = useRef(null)
   // const chatRef = useRef(null)
-  // const audioRef = useRef(new Audio('/move-sound.mp3'))
+  const audioRef = useRef(null)
+
+  useEffect(() => {
+    audioRef.current = new Audio('/move.mp3')
+  }, [])
 
   const makeAMove = useCallback(
     (move) => {
       try {
         const result = chess.move(move) // update Chess instance
         setFen(chess.fen()) // update fen state to trigger a re-render
+        if (isSoundEnabled) {
+          audioRef.current.play()
+        }
         if (chess.isGameOver()) {
           if (chess.isCheckmate()) {
             setOver(
@@ -57,11 +65,11 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
         return null
       }
     },
-    [chess]
+    [chess, isSoundEnabled]
   )
 
   // onDrop function
-  function onDrop(sourceSquare, targetSquare) {
+  function onDrop(sourceSquare, targetSquare, piece) {
     
     if (chess.turn() !== orientation[0]) return false 
 
@@ -71,7 +79,8 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
       from: sourceSquare,
       to: targetSquare,
       color: chess.turn(),
-      promotion: 'q', // promote to queen where possible
+      //promotion: 'q', // promote to queen where possible
+      promotion: piece[1].toLowerCase() ?? "q"
     }
 
     const move = makeAMove(moveData)
