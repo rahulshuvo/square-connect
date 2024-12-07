@@ -17,7 +17,29 @@ export default function VideoChat({ room }) {
     // Create RTCPeerConnection
     const pc = new RTCPeerConnection({
       iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }, // Use Google's public STUN server
+        {
+          urls: 'stun:stun.relay.metered.ca:80',
+        },
+        {
+          urls: 'turn:global.relay.metered.ca:80',
+          username: 'f7223d7acd90e5a2246b56a9',
+          credential: 'Nyh+G9X3hwCOoBh8',
+        },
+        {
+          urls: 'turn:global.relay.metered.ca:80?transport=tcp',
+          username: 'f7223d7acd90e5a2246b56a9',
+          credential: 'Nyh+G9X3hwCOoBh8',
+        },
+        {
+          urls: 'turn:global.relay.metered.ca:443',
+          username: 'f7223d7acd90e5a2246b56a9',
+          credential: 'Nyh+G9X3hwCOoBh8',
+        },
+        {
+          urls: 'turns:global.relay.metered.ca:443?transport=tcp',
+          username: 'f7223d7acd90e5a2246b56a9',
+          credential: 'Nyh+G9X3hwCOoBh8',
+        },
       ],
     })
     setPeerConnection(pc)
