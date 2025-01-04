@@ -1,60 +1,93 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react"
+import { useState, useEffect } from 'react'
 // import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import socket from './socket'
 
-export default function InitGame({ setRoom, setOrientation, setGameDuration, setPlayers }) {
+export default function InitGame({
+  setRoom,
+  setOrientation,
+  setGameDuration,
+  setPlayers,
+}) {
   // const router = useRouter()
-  const [username, setUsername] = useState("")
-  const [gameMode, setGameMode] = useState("start")
-  const [pieceColor, setPieceColor] = useState("random")
-  const [gameTime, setGameTime] = useState("10")
-  const [roomId, setRoomId] = useState("")
+  const [username, setUsername] = useState('')
+  const [gameMode, setGameMode] = useState('start')
+  const [pieceColor, setPieceColor] = useState('random')
+  const [gameTime, setGameTime] = useState('10')
+  const [roomId, setRoomId] = useState('')
   const [roomError, setRoomError] = useState('')
   const [roomDialogOpen, setRoomDialogOpen] = useState(false)
-  
+  const [isRoomIdFromUrl, setIsRoomIdFromUrl] = useState(false)
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const roomIdFromUrl = urlParams.get('roomId')
+
+    if (roomIdFromUrl) {
+      setIsRoomIdFromUrl(true)
+      setRoomId(roomIdFromUrl)
+      setGameMode('join')
+    }
+  }, []) // This effect runs once when the component mounts
+
   const getRandomColor = () => {
-    return Math.random() < 0.5 ? 'white' : 'black';
+    return Math.random() < 0.5 ? 'white' : 'black'
   }
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Here you would typically send this data to your backend or state management
-    // For now, we'll just log it and redirect to a placeholder game page
+
+    // Validate username
+    if (!username.trim() || username.length < 1 || username.length > 15) {
+      return alert('Please set Username.')
+    }
+
     console.log({ username, gameMode, pieceColor, gameTime, roomId })
 
-    const finalColor = pieceColor === 'random' ? getRandomColor() : pieceColor;
+    const finalColor = pieceColor === 'random' ? getRandomColor() : pieceColor
 
-
-    socket.emit("username", username);
-    socket.emit("setOrientation", finalColor );
-    socket.emit("setGameDuration", gameTime);
-    if (gameMode === "start") {
-      // router.push(`/game?username=${username}&mode=${gameMode}&color=${pieceColor}&duration=${gameDuration}`)
+    socket.emit('username', username)
+    socket.emit('setOrientation', finalColor)
+    socket.emit('setGameDuration', gameTime)
+    if (gameMode === 'start') {
       socket.emit('createRoom', (r) => {
-        console.log("from server" ,r)
+        console.log('from server', r)
         setRoom(r)
         setOrientation(finalColor)
         setGameDuration(gameTime)
       })
     } else {
       // router.push(`/game?username=${username}&mode=${gameMode}&roomId=${roomId}`)
-      socket.emit("joinRoom", { roomId: roomId }, (r) => {
-        console.log("joinRoom response:", r);
+      socket.emit('joinRoom', { roomId: roomId }, (r) => {
+        console.log('joinRoom response:', r)
         // r is the response from the server
-        if (r.error) return setRoomError(r.message); // if an error is returned in the response set roomError to the error message and exit
-        setRoom(r?.roomId); // set room to the room ID
-        setPlayers(r?.players); // set players array to the array of players in the room
-        setOrientation(r?.players[0].orientation === "black" ? "white" : "black"); // set orientation as black
-        setRoomDialogOpen(false); // close dialog
-        setGameDuration(r?.gameDuration); // set game duration
-      });
-      
+        if (r.error) return setRoomError(r.message) // if an error is returned in the response set roomError to the error message and exit
+        setRoom(r?.roomId) // set room to the room ID
+        setPlayers(r?.players) // set players array to the array of players in the room
+        setOrientation(
+          r?.players[0].orientation === 'black' ? 'white' : 'black'
+        ) // set orientation as black
+        setRoomDialogOpen(false) // close dialog
+        setGameDuration(r?.gameDuration) // set game duration
+      })
     }
   }
 
@@ -80,7 +113,12 @@ export default function InitGame({ setRoom, setOrientation, setGameDuration, set
 
             <div className="space-y-2">
               <Label>Game Mode</Label>
-              <RadioGroup value={gameMode} onValueChange={setGameMode} className="flex space-x-4">
+              <RadioGroup
+                value={gameMode}
+                onValueChange={setGameMode}
+                className="flex space-x-4"
+                disabled={isRoomIdFromUrl}
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="start" id="start" />
                   <Label htmlFor="start">Start a game</Label>
@@ -92,11 +130,15 @@ export default function InitGame({ setRoom, setOrientation, setGameDuration, set
               </RadioGroup>
             </div>
 
-            {gameMode === "start" ? (
+            {gameMode === 'start' ? (
               <>
                 <div className="space-y-2">
                   <Label>Piece Color</Label>
-                  <RadioGroup value={pieceColor} onValueChange={setPieceColor} className="flex space-x-4">
+                  <RadioGroup
+                    value={pieceColor}
+                    onValueChange={setPieceColor}
+                    className="flex space-x-4"
+                  >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="white" id="white" />
                       <Label htmlFor="white">White</Label>
@@ -136,6 +178,7 @@ export default function InitGame({ setRoom, setOrientation, setGameDuration, set
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
                   required
+                  disabled={isRoomIdFromUrl}
                 />
               </div>
             )}
@@ -143,7 +186,7 @@ export default function InitGame({ setRoom, setOrientation, setGameDuration, set
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" onClick={handleSubmit}>
-            {gameMode === "start" ? "Start Game" : "Join Game"}
+            {gameMode === 'start' ? 'Start Game' : 'Join Game'}
           </Button>
         </CardFooter>
       </Card>

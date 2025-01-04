@@ -167,11 +167,11 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
 
 
   const copyRoomLink = () => {
-    //const link = `${window.location.origin}?roomId=${room}`
-    const link = room
+    const link = `${window.location.origin}?roomId=${room}`
     navigator.clipboard.writeText(link).then(
       () => {
-        console.log('Link copied to clipboard: ', link), setCopied(true),
+        console.log('Link copied to clipboard: ', link),
+          setCopied(true),
           setTimeout(() => {
             setCopied(false)
           }, 3000)
@@ -190,9 +190,7 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
           <Card className="mb-4">
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-2">
-                <div
-                  className="p-2 rounded bg-primary text-primary-foreground"
-                >
+                <div className="p-2 rounded bg-primary text-primary-foreground">
                   <p className="font-semibold">
                     {orientation == 'black' ? 'White' : 'Black'}
                   </p>
@@ -202,14 +200,13 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
                       : formatTime(blackTime)}
                   </p>
                 </div>
-                <div className="font-semibold">Room ID: {room}</div>
                 <Button variant="outline" size="sm" onClick={copyRoomLink}>
                   {copied ? (
                     <CopyCheck className="h-4 w-4 mr-2" />
                   ) : (
                     <Copy className="h-4 w-4 mr-2" />
                   )}
-                  {copied? "Copied" : "Copy RoomId"}
+                  {copied ? 'Copied' : 'Copy GameLink'}
                 </Button>
               </div>
               <div className="aspect-square w-full max-w-[600px] mx-auto">
@@ -220,9 +217,7 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
                 />
               </div>
               <div className="flex justify-between items-center mt-2">
-                <div
-                  className="p-2 rounded bg-primary text-primary-foreground"
-                >
+                <div className="p-2 rounded bg-primary text-primary-foreground">
                   <p className="font-semibold">
                     {orientation == 'black' ? 'Black' : 'White'}
                   </p>
@@ -269,8 +264,12 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
           />
         </div>
         <div className="lg:w-1/3 space-y-6">
-          {showVideoChat && <VideoChat room={room} />}
-          {showTextChat && <Chat room={room} />}
+          <div className={showVideoChat ? '' : 'hidden'}>
+            <VideoChat room={room} />
+          </div>
+          <div className={showTextChat ? '' : 'hidden'}>
+            <Chat room={room} />
+          </div>
         </div>
       </div>
 
