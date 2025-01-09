@@ -9,29 +9,37 @@ import { Copy, CopyCheck } from 'lucide-react'
 import socket from './socket'
 
 import VideoChat from './components/VideoChat'
-//import VideoChat from './components/VideoTest'
 import Chat from './components/Chat'
-import GameInfo from './components/GameInfo'
 import CustomDialog from './components/CustomDialog'
+import './Game.scss'
 
-export default function ChessGame({ players, room, orientation, gameDuration, cleanup }) {
-  const opponentObject = players.find(player => player.orientation !== orientation) || null;
-  const opponent = opponentObject ? opponentObject.username : "name not found";
+export default function ChessGame({
+  players,
+  room,
+  orientation,
+  gameDuration,
+  cleanup,
+}) {
+  const opponentObject =
+    players.find((player) => player.orientation !== orientation) || null
+  const opponentName = opponentObject
+    ? opponentObject.username
+    : 'opponent not found'
+  const currentPlayerObject =
+    players.find((player) => player.orientation === orientation) || null
+  const currentPlayerName = currentPlayerObject
+    ? currentPlayerObject.username
+    : 'Player not found'
   const chess = useMemo(() => new Chess(), [])
   const [fen, setFen] = useState(chess.fen())
   const [over, setOver] = useState('')
-
-  // const [game, setGame] = useState(new Chess())
   const [whiteTime, setWhiteTime] = useState(gameDuration * 60)
   const [blackTime, setBlackTime] = useState(gameDuration * 60)
-  const [isGameActive, setIsGameActive] = useState(false)
-  const [currentPlayer, setCurrentPlayer] = useState('w')
   const [showVideoChat, setShowVideoChat] = useState(true)
   const [showTextChat, setShowTextChat] = useState(true)
   const [isSoundEnabled, setIsSoundEnabled] = useState(true)
   const [copied, setCopied] = useState(false)
-  // const timerRef = useRef(null)
-  // const chatRef = useRef(null)
+  const timerRef = useRef(null)
   const audioRef = useRef(null)
 
   useEffect(() => {
@@ -41,8 +49,8 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
   const makeAMove = useCallback(
     (move) => {
       try {
-        const result = chess.move(move) // update Chess instance
-        setFen(chess.fen()) // update fen state to trigger a re-render
+        const result = chess.move(move)
+        setFen(chess.fen())
         if (isSoundEnabled) {
           audioRef.current.play()
         }
@@ -51,7 +59,6 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
             setOver(
               `Checkmate! ${chess.turn() === 'w' ? 'black' : 'white'} wins!`
             )
-            // The winner is determined by checking which side made the last move
           } else if (chess.isDraw()) {
             setOver('Draw')
           } else {
@@ -68,10 +75,8 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
     [chess, isSoundEnabled]
   )
 
-  // onDrop function
   function onDrop(sourceSquare, targetSquare, piece) {
-    
-    if (chess.turn() !== orientation[0]) return false 
+    if (chess.turn() !== orientation[0]) return false
 
     if (players.length < 2) return false
 
@@ -79,13 +84,11 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
       from: sourceSquare,
       to: targetSquare,
       color: chess.turn(),
-      //promotion: 'q', // promote to queen where possible
-      promotion: piece[1].toLowerCase() ?? "q"
+      promotion: piece[1].toLowerCase() ?? 'q',
     }
 
     const move = makeAMove(moveData)
 
-    // illegal move
     if (move === null) return false
 
     socket.emit('move', {
@@ -96,6 +99,14 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
     return true
   }
 
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60)
+    const seconds = time % 60
+    return `${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}`
+  }
+
   useEffect(() => {
     socket.on('move', (move) => {
       makeAMove(move)
@@ -104,7 +115,7 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
 
   useEffect(() => {
     socket.on('playerDisconnected', (player) => {
-      setOver(`${player.username} has disconnected`) // set game over
+      setOver(`${player.username} has disconnected`)
     })
   }, [])
 
@@ -116,65 +127,20 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
     })
   }, [room, cleanup])
 
-  const startGame = () => {
-    // setIsGameActive(true)
-    // setGame(new Chess())
-    // setWhiteTime(600)
-    // setBlackTime(600)
-    // setCurrentPlayer('w')
-    // setMessages([])
-    // if (timerRef.current) clearInterval(timerRef.current)
-    // timerRef.current = setInterval(decrementTime, 1000)
-  }
-
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60)
-    const seconds = time % 60
-    return `${minutes.toString().padStart(2, '0')}:${seconds
-      .toString()
-      .padStart(2, '0')}`
-  }
-
-  // const decrementTime = useCallback(() => {
-  //   if (isGameActive) {
-  //     if (currentPlayer === 'w') {
-  //       setWhiteTime((prevTime) => {
-  //         if (prevTime <= 0) {
-  //           setIsGameActive(false)
-  //           clearInterval(timerRef.current)
-  //           return 0
-  //         }
-  //         return prevTime - 1
-  //       })
-  //     } else {
-  //       setBlackTime((prevTime) => {
-  //         if (prevTime <= 0) {
-  //           setIsGameActive(false)
-  //           clearInterval(timerRef.current)
-  //           return 0
-  //         }
-  //         return prevTime - 1
-  //       })
-  //     }
-  //   }
-  // }, [currentPlayer, isGameActive])
-
-  // useEffect(() => {
-  //   return () => {
-  //     if (timerRef.current) clearInterval(timerRef.current)
-  //   }
-  // }, [])
-
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [])
 
   const copyRoomLink = () => {
     const link = `${window.location.origin}?roomId=${room}`
     navigator.clipboard.writeText(link).then(
       () => {
-        console.log('Link copied to clipboard: ', link),
-          setCopied(true),
-          setTimeout(() => {
-            setCopied(false)
-          }, 3000)
+        setCopied(true)
+        setTimeout(() => {
+          setCopied(false)
+        }, 3000)
       },
       (err) => {
         console.error('Could not copy text: ', err)
@@ -183,52 +149,58 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Square Connect</h1>
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="lg:w-2/3">
-          <Card className="mb-4">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center mb-2">
-                <div className="p-2 rounded bg-primary text-primary-foreground">
-                  <p className="font-semibold">
-                    {orientation == 'black' ? 'White' : 'Black'}
+    <div className="game-container">
+      <div className="game-content">
+        <div className="game-board-container">
+          <Card className="game-card">
+            <CardContent className="game-card-content">
+              <div className="game-header">
+                <div className="timer-container">
+                  <p className="timer-title">
+                    {orientation === 'black' ? 'White' : 'Black'}
                   </p>
-                  <p className="text-2xl font-mono">
-                    {orientation == 'black'
+                  <p className="timer">
+                    {orientation === 'black'
                       ? formatTime(whiteTime)
                       : formatTime(blackTime)}
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={copyRoomLink}>
+                <p className="opponent-name">{opponentName}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={copyRoomLink}
+                  className="copy-button"
+                >
                   {copied ? (
-                    <CopyCheck className="h-4 w-4 mr-2" />
+                    <CopyCheck className="icon" />
                   ) : (
-                    <Copy className="h-4 w-4 mr-2" />
+                    <Copy className="icon" />
                   )}
                   {copied ? 'Copied' : 'Copy GameLink'}
                 </Button>
               </div>
-              <div className="aspect-square w-full max-w-[600px] mx-auto">
+              <div className="chessboard-container">
                 <Chessboard
                   position={fen}
                   onPieceDrop={onDrop}
                   boardOrientation={orientation}
                 />
               </div>
-              <div className="flex justify-between items-center mt-2">
-                <div className="p-2 rounded bg-primary text-primary-foreground">
-                  <p className="font-semibold">
-                    {orientation == 'black' ? 'Black' : 'White'}
+              <div className="game-footer">
+                <div className="timer-container">
+                  <p className="timer-title">
+                    {orientation === 'black' ? 'Black' : 'White'}
                   </p>
-                  <p className="text-2xl font-mono">
-                    {orientation == 'black'
+                  <p className="timer">
+                    {orientation === 'black'
                       ? formatTime(blackTime)
                       : formatTime(whiteTime)}
                   </p>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+                <p className="current-player-name">{currentPlayerName}</p>
+                <div className="settings-container">
+                  <div className="setting-item">
                     <Switch
                       id="video-chat-toggle"
                       checked={showVideoChat}
@@ -236,7 +208,7 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
                     />
                     <label htmlFor="video-chat-toggle">Video Chat</label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="setting-item">
                     <Switch
                       id="text-chat-toggle"
                       checked={showTextChat}
@@ -244,7 +216,7 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
                     />
                     <label htmlFor="text-chat-toggle">Text Chat</label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="setting-item">
                     <Switch
                       id="sound-toggle"
                       checked={isSoundEnabled}
@@ -256,14 +228,8 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
               </div>
             </CardContent>
           </Card>
-          <GameInfo
-            opponent={opponent}
-            gameDuration={gameDuration}
-            isGameActive={isGameActive}
-            startGame={startGame}
-          />
         </div>
-        <div className="lg:w-1/3 space-y-6">
+        <div className="side-panels">
           <div className={showVideoChat ? '' : 'hidden'}>
             <VideoChat room={room} />
           </div>
@@ -272,12 +238,9 @@ export default function ChessGame({ players, room, orientation, gameDuration, cl
           </div>
         </div>
       </div>
-
       <CustomDialog
         isOpen={Boolean(over)}
-        //type={"playerDisconnected"}
         onClose={() => setOver('')}
-        //winner={over}
         title={over}
       />
     </div>
